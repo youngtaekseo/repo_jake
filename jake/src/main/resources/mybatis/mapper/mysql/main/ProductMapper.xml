@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.win.work.product.ProductDao">
+
+	<resultMap id="resultMapObj" type="com.win.work.product.ProductDto"></resultMap>
+	
+	<select id="selectList" resultMap="resultMapObj">
+		SELECT a.pdtSeq
+			 , a.pdtTypeCd
+			 , a.pdtBrandCd
+			 , a.pdtName
+			 , a.pdtAccidentCd
+			 , a.pdtYear
+			 , a.pdtRunKm
+			 , a.pdtColorCd
+			 , a.pdtPrice
+			 , a.pdtRecommendCd
+			 , a.pdtRegDt
+			 , a.pdtUdtDt
+			 , a.pdtDelNy
+		  FROM product a
+		 WHERE 1 = 1
+		 
+		<choose>
+			<when test="shOptionDate == 1">AND a.pdtRegDt BETWEEN #{shDateStart} AND #{shDateEnd}</when>
+			<when test="shOptionDate == 2">AND a.pdtUdtDt BETWEEN #{shDateStart} AND #{shDateEnd}</when>
+		</choose>
+		
+		<choose>
+			<when test="shOption == 1">AND a.pdtName  LIKE CONCAT('%', #{shValue}, '%')</when>
+			<when test="shOption == 2">AND a.pdtEmail LIKE CONCAT('%', #{shValue}, '%')</when>
+		</choose>
+		
+		<choose>
+			<when test="shOptionRunKm == 1">AND a.pdtRunKm  BETWEEN #{shOptionRunKmFrom} AND #{shOptionRunKmTo}</when>
+			<when test="shOptionRunKm == 2">AND a.pdtRunKm <![CDATA[<=]]> #{shOptionRunKmFrom}</when>
+			<when test="shOptionRunKm == 3">AND a.pdtRunKm >= #{shOptionRunKmFrom}</when>
+		</choose>	
+		
+		<choose>
+			<when test="shOptionYear == 1">AND a.pdtYear  BETWEEN #{shOptionYearFrom} AND #{shOptionYearTo}</when>
+			<when test="shOptionYear == 2">AND a.pdtYear <![CDATA[<=]]> #{shOptionYearFrom}</when>
+			<when test="shOptionYear == 3">AND a.pdtYear >= #{shOptionYearFrom}</when>
+		</choose>			
+
+		<if test="shCarType   != null and !shCarType.equals('')">  AND a.pdtTypeCd      = #{shCarType}</if>
+		<if test="shCarBrand  != null and !shCarBrand.equals('')"> AND a.pdtBrandCd     = #{shCarBrand}</if>
+		<if test="shCarColor  != null and !shCarColor.equals('')"> AND a.pdtColorCd     = #{shCarColor}</if>
+		<if test="shRecommend != null and !shRecommend.equals('')">AND a.pdtRecommendCd = #{shRecommend}</if>
+		<if test="shAccident  != null and !shAccident.equals('')"> AND a.pdtAccidentCd  = #{shAccident}</if>
+		<if test="shDelNy 	  != null and !shDelNy.equals('')">    AND a.pdtDelNy       = #{shDelNy}</if>
+	
+         ORDER BY a.pdtSeq DESC 
+         
+    	 LIMIT #{pgRowCount}
+    	OFFSET #{pgOffset}         
+	</select>
+
+	<select id="selectOne" resultMap="resultMapObj">
+		SELECT a.pdtSeq
+			 , a.pdtTypeCd
+			 , a.pdtBrandCd
+			 , a.pdtName
+			 , a.pdtAccidentCd
+			 , a.pdtYear
+			 , a.pdtRunKm
+			 , a.pdtColorCd
+			 , a.pdtPrice
+			 , a.pdtRecommendCd
+			 , a.pdtRegDt
+			 , a.pdtUdtDt
+			 , a.pdtDelNy
+		  FROM product a
+		 WHERE 1 = 1		
+           AND a.pdtSeq = #{pdtSeq}
+	</select>	
+	
+	<insert id="insert">
+		INSERT INTO product
+			( 
+			  pdtTypeCd
+			, pdtBrandCd
+			, pdtName
+			, pdtAccidentCd
+			, pdtYear
+			, pdtRunKm
+			, pdtColorCd
+			, pdtPrice
+			, pdtRecommendCd
+			, pdtRegDt
+			, pdtUdtDt
+			, pdtDelNy
+			)
+		VALUES
+			(
+			  #{pdtTypeCd}
+			, #{pdtBrandCd}
+			, #{pdtName}
+			, #{pdtAccidentCd}
+			, #{pdtYear}
+			, #{pdtRunKm}
+			, #{pdtColorCd}
+			, #{pdtPrice}
+			, #{pdtRecommendCd}
+			, now()
+			, now()
+			, 0
+			)
+	</insert>
+	
+	<update id="update">
+		UPDATE product
+		   SET pdtTypeCd      = #{pdtTypeCd}
+			 , pdtBrandCd     = #{pdtBrandCd}
+			 , pdtName        = #{pdtName}
+			 , pdtAccidentCd  = #{pdtAccidentCd}
+			 , pdtYear        = #{pdtYear}
+			 , pdtRunKm       = #{pdtRunKm}
+			 , pdtColorCd     = #{pdtColorCd}
+			 , pdtPrice       = #{pdtPrice}
+			 , pdtRecommendCd = #{pdtRecommendCd}
+			 , pdtUdtDt       = now()
+         WHERE 1 = 1		
+           AND pdtSeq = #{pdtSeq}	
+	</update>
+	
+	<update id="updateDelNy">
+		UPDATE product
+		   SET pdtUdtDt = now()
+		   
+		   <choose>
+		   		<when test="pdtDelNy == 0">, pdtDelNy = 1</when>
+		   		<when test="pdtDelNy == 1">, pdtDelNy = 0</when>
+		   </choose>
+         WHERE 1 = 1		
+           AND pdtSeq = #{pdtSeq}
+	</update>	
+	
+	<delete id="delete">
+		DELETE FROM product
+         WHERE 1 = 1		
+           AND pdtSeq = #{pdtSeq}
+	</delete>
+	
+    <select id="findAll" resultMap="resultMapObj">
+		SELECT a.pdtSeq
+			 , a.pdtTypeCd
+			 , a.pdtBrandCd
+			 , a.pdtName
+			 , a.pdtAccidentCd
+			 , a.pdtYear
+			 , a.pdtRunKm
+			 , a.pdtColorCd
+			 , a.pdtPrice
+			 , a.pdtRecommendCd
+			 , a.pdtRegDt
+			 , a.pdtUdtDt
+			 , a.pdtDelNy
+		  FROM product a
+		 WHERE 1 = 1
+		 
+		<choose>
+			<when test="shOptionDate == 1">AND a.pdtRegDt BETWEEN #{shDateStart} AND #{shDateEnd}</when>
+			<when test="shOptionDate == 2">AND a.pdtUdtDt BETWEEN #{shDateStart} AND #{shDateEnd}</when>
+		</choose>
+		
+		<choose>
+			<when test="shOption == 1">AND a.pdtName  LIKE CONCAT('%', #{shValue}, '%')</when>
+			<when test="shOption == 2">AND a.pdtEmail LIKE CONCAT('%', #{shValue}, '%')</when>
+		</choose>
+		
+		<choose>
+			<when test="shOptionRunKm == 1">AND a.pdtRunKm  BETWEEN #{shOptionRunKmFrom} AND #{shOptionRunKmTo}</when>
+			<when test="shOptionRunKm == 2">AND a.pdtRunKm <![CDATA[<=]]> #{shOptionRunKmFrom}</when>
+			<when test="shOptionRunKm == 3">AND a.pdtRunKm >= #{shOptionRunKmFrom}</when>
+		</choose>	
+		
+		<choose>
+			<when test="shOptionYear == 1">AND a.pdtYear  BETWEEN #{shOptionYearFrom} AND #{shOptionYearTo}</when>
+			<when test="shOptionYear == 2">AND a.pdtYear <![CDATA[<=]]> #{shOptionYearFrom}</when>
+			<when test="shOptionYear == 3">AND a.pdtYear >= #{shOptionYearFrom}</when>
+		</choose>			
+
+		<if test="shCarType   != null and !shCarType.equals('')">  AND a.pdtTypeCd      = #{shCarType}</if>
+		<if test="shCarBrand  != null and !shCarBrand.equals('')"> AND a.pdtBrandCd     = #{shCarBrand}</if>
+		<if test="shCarColor  != null and !shCarColor.equals('')"> AND a.pdtColorCd     = #{shCarColor}</if>
+		<if test="shRecommend != null and !shRecommend.equals('')">AND a.pdtRecommendCd = #{shRecommend}</if>
+		<if test="shAccident  != null and !shAccident.equals('')"> AND a.pdtAccidentCd  = #{shAccident}</if>
+		<if test="shDelNy 	  != null and !shDelNy.equals('')">    AND a.pdtDelNy       = #{shDelNy}</if>
+	
+         ORDER BY a.pdtSeq DESC 
+         LIMIT #{UtilPaging.limitStart}, #{recordSize}         
+    </select>
+    
+    
+    <!-- 카운팅 -->
+    <select id="getCount">
+        SELECT COUNT(*)
+          FROM product a
+         WHERE 1 = 1
+		<choose>
+			<when test="shOptionDate == 1">AND a.pdtRegDt BETWEEN #{shDateStart} AND #{shDateEnd}</when>
+			<when test="shOptionDate == 2">AND a.pdtUdtDt BETWEEN #{shDateStart} AND #{shDateEnd}</when>
+		</choose>
+		
+		<choose>
+			<when test="shOption == 1">AND a.pdtName  LIKE CONCAT('%', #{shValue}, '%')</when>
+			<when test="shOption == 2">AND a.pdtEmail LIKE CONCAT('%', #{shValue}, '%')</when>
+		</choose>
+		
+		<choose>
+			<when test="shOptionRunKm == 1">AND a.pdtRunKm  BETWEEN #{shOptionRunKmFrom} AND #{shOptionRunKmTo}</when>
+			<when test="shOptionRunKm == 2">AND a.pdtRunKm <![CDATA[<=]]> #{shOptionRunKmFrom}</when>
+			<when test="shOptionRunKm == 3">AND a.pdtRunKm >= #{shOptionRunKmFrom}</when>
+		</choose>	
+		
+		<choose>
+			<when test="shOptionYear == 1">AND a.pdtYear  BETWEEN #{shOptionYearFrom} AND #{shOptionYearTo}</when>
+			<when test="shOptionYear == 2">AND a.pdtYear <![CDATA[<=]]> #{shOptionYearFrom}</when>
+			<when test="shOptionYear == 3">AND a.pdtYear >= #{shOptionYearFrom}</when>
+		</choose>			
+
+		<if test="shCarType   != null and !shCarType.equals('')">  AND a.pdtTypeCd      = #{shCarType}</if>
+		<if test="shCarBrand  != null and !shCarBrand.equals('')"> AND a.pdtBrandCd     = #{shCarBrand}</if>
+		<if test="shCarColor  != null and !shCarColor.equals('')"> AND a.pdtColorCd     = #{shCarColor}</if>
+		<if test="shRecommend != null and !shRecommend.equals('')">AND a.pdtRecommendCd = #{shRecommend}</if>
+		<if test="shAccident  != null and !shAccident.equals('')"> AND a.pdtAccidentCd  = #{shAccident}</if>
+		<if test="shDelNy 	  != null and !shDelNy.equals('')">    AND a.pdtDelNy       = #{shDelNy}</if>
+    </select>	
+
+</mapper>
